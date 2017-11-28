@@ -1,0 +1,93 @@
+version: '2'
+services:
+ # Apache HTTPd
+ app-httpd:
+  container_name: app-httpd
+  image: app/httpd
+  ports:
+   - "80:80"
+  volumes:
+   - /path/to/store/app:/home/vhosts
+  depends_on:
+   - app-fpm55
+   - app-fpm70
+  links:
+   - "app-fpm55:fpm55"
+   - "app-fpm70:fpm70"
+  logging:
+   driver: "json-file"
+   options:
+    max-size: "1g"
+    max-file: "10"
+ # Session storage
+ app-redis:
+  container_name: app-redis
+  image: app/redis
+  volumes:
+   - /path/to/store/app:/home/vhosts
+  logging:
+   driver: "json-file"
+   options:
+    max-size: "1g"
+    max-file: "10"
+ # PHP 5.5 FPM
+ app-fpm55:
+  container_name: app-fpm55
+  image: app/fpm/5.5
+  volumes:
+   - /path/to/store/project:/home/vhosts
+  depends_on:
+   - app-redis
+  links:
+   - "app-redis:redis"
+  logging:
+   driver: "json-file"
+   options:
+    max-size: "1g"
+    max-file: "10"
+ # PHP 7.0 FPM
+ app-fpm70:
+  container_name: app-fpm70
+  image: app/fpm/7.0
+  volumes:
+   - /path/to/store/app:/home/vhosts
+  depends_on:
+   - app-redis
+  links:
+   - "app-redis:redis"
+  logging:
+   driver: "json-file"
+   options:
+    max-size: "1g"
+    max-file: "10" 
+ # PHP 5.5 cli
+ app-cli:
+  container_name: app-cli55
+  image: app/cli/5.5
+  volumes:
+   - /path/to/store/app:/home/vhosts
+  links:
+   - "app-redis:redis"
+   - "app-fpm55:fpm55"
+   - "app-fpm70:fpm70"
+  logging:
+   driver: "json-file"
+   options:
+    max-size: "1g"
+    max-file: "10"
+ # PHP 7.0 cli
+ app-cli:
+  container_name: app-cli70
+  image: app/cli/7.0
+  volumes:
+   - /path/to/store/app:/home/vhosts
+  links:
+   - "app-redis:redis"
+   - "app-fpm55:fpm55"
+   - "app-fpm70:fpm70"
+  logging:
+   driver: "json-file"
+   options:
+    max-size: "1g"
+    max-file: "10"    
+    
