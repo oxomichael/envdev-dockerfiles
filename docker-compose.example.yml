@@ -1,93 +1,67 @@
-version: '2'
+version: '2.1'
 services:
- # Apache HTTPd
- app-httpd:
-  container_name: app-httpd
-  image: app/httpd
-  ports:
-   - "80:80"
-  volumes:
-   - /path/to/store/app:/home/vhosts
-  depends_on:
-   - app-fpm55
-   - app-fpm70
-  links:
-   - "app-fpm55:fpm55"
-   - "app-fpm70:fpm70"
-  logging:
-   driver: "json-file"
-   options:
-    max-size: "1g"
-    max-file: "10"
- # Session storage
- app-redis:
-  container_name: app-redis
-  image: app/redis
-  volumes:
-   - /path/to/store/app:/home/vhosts
-  logging:
-   driver: "json-file"
-   options:
-    max-size: "1g"
-    max-file: "10"
- # PHP 5.5 FPM
- app-fpm55:
-  container_name: app-fpm55
-  image: app/fpm/5.5
-  volumes:
-   - /path/to/store/project:/home/vhosts
-  depends_on:
-   - app-redis
-  links:
-   - "app-redis:redis"
-  logging:
-   driver: "json-file"
-   options:
-    max-size: "1g"
-    max-file: "10"
  # PHP 7.0 FPM
- app-fpm70:
-  container_name: app-fpm70
-  image: app/fpm/7.0
+ dev-fpm70:
+  container_name: dev-fpm70
+  image: envdev/php-fpm:7.0-debian
   volumes:
-   - /path/to/store/app:/home/vhosts
-  depends_on:
-   - app-redis
+   - /path/to/workspace:/home/vhosts
   links:
-   - "app-redis:redis"
-  logging:
-   driver: "json-file"
-   options:
-    max-size: "1g"
-    max-file: "10" 
- # PHP 5.5 cli
- app-cli:
-  container_name: app-cli55
-  image: app/cli/5.5
-  volumes:
-   - /path/to/store/app:/home/vhosts
-  links:
-   - "app-redis:redis"
-   - "app-fpm55:fpm55"
-   - "app-fpm70:fpm70"
+   - "dev-db:db"
+   - "dev-mailcatcher:mailcatcher"
   logging:
    driver: "json-file"
    options:
     max-size: "1g"
     max-file: "10"
- # PHP 7.0 cli
- app-cli:
-  container_name: app-cli70
-  image: app/cli/7.0
-  volumes:
-   - /path/to/store/app:/home/vhosts
-  links:
-   - "app-redis:redis"
-   - "app-fpm55:fpm55"
-   - "app-fpm70:fpm70"
+  environment:
+   LOCAL_USER_ID: 1000
+ # MailCatcher
+ dev-mailcatcher:
+  container_name: dev-mailcatcher
+  image: envdev/mailcatcher:0.6.5
   logging:
    driver: "json-file"
    options:
     max-size: "1g"
-    max-file: "10"    
-    
+    max-file: "10"
+ # MariaDB
+ dev-db:
+  container_name: dev-db
+  image: envdev/mariadb:10.2-debian
+  user: mysql
+  volumes:
+   - /path/to/workspace/database:/var/lib/mysql
+  logging:
+   driver: "json-file"
+   options:
+    max-size: "500m"
+    max-file: "9"
+  environment:
+   MARIADB_PASS: password
+ # Apache HTTPd
+ dev-httpd:
+  container_name: dev-httpd
+  image: envdev/httpd:2.4-debian
+  volumes:
+   - /path/to/workspace:/home/vhosts
+  links:
+   - "dev-fpm70:fpm70"
+  logging:
+   driver: "json-file"
+   options:
+    max-size: "1g"
+    max-file: "10"
+  networks:
+   default:
+   front:
+    ipv4_address: 172.10.0.2
+
+networks:
+ front:
+  driver: bridge
+  ipam:
+   driver: default
+   config:
+    - subnet: 172.10.0.0/16
+      gateway: 172.10.0.1
