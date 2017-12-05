@@ -4,13 +4,11 @@ $ docker build --force-rm --no-cache -t envdev/mariadb:<version>-<distrib> maria
 ```
 
 # Usage
-
 * 5.5-ubuntu
 * 10.0-ubuntu
 * 10.1-ubuntu
 * 10.2-debian
   * In `docker run` specify `--user mysql`  
-
 
 The first time that you run your container, a new user `admin` with all privileges
 will be created in MariaDB with a random password. To get the password, check the logs
