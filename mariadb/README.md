@@ -1,10 +1,9 @@
-docker-mariadb
-==============
+# Build
+```
+$ docker build --force-rm --no-cache -t envdev/mariadb:<version>-<distrib> mariadb/<version>/<distrib>/
+```
 
-Base docker image to run a MariaDB database server
-
-MariaDB version
----------------
+# Usage
 
 * 5.5-ubuntu
 * 10.0-ubuntu
@@ -12,17 +11,6 @@ MariaDB version
 * 10.2-debian
   * In `docker run` specify `--user mysql`  
 
-
-Usage
------
-
-To create the image, execute the following command on the tutum-docker-mariadb folder:
-
-	docker build --force-rm --no-cache -t oxo/mariadb:<version>-<distrib> .
-
-To run the image and bind to port 3306:
-
-	docker run -d -p 3306:3306 oxo/mariadb
 
 The first time that you run your container, a new user `admin` with all privileges
 will be created in MariaDB with a random password. To get the password, check the logs
@@ -43,11 +31,9 @@ You will see an output like the following:
 
 In this case, `xVN33tWOhM3u` is the password assigned to the `admin` user.
 
-
-Setting a specific password for the admin account
--------------------------------------------------
+## Setting a specific password for the admin account
 
 If you want to use a preset password instead of a random generated one, you can
 set the environment variable `MARIADB_PASS` to your specific password when running the container:
 
-        docker run -d -p 3306:3306 -e MARIADB_PASS="mypass" oxo/mariadb
+`$ docker run -d -p 3306:3306 -e MARIADB_PASS="mypass" envdev/mariadb`
